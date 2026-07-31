@@ -198,7 +198,7 @@ const STATUS_UNITS = {
 };
 
 const STATUS_STATE_ENUMS = {
-    mode: { auto: "auto", cool: "cool", dry: "dry", heat: "heat", fanonly: "fanonly", customdry: "customdry", off: "off", set: "set", continuity: "continuity", dry_clothes: "dry clothes", dry_shoes: "dry shoes", fan: "fan", manual: "manual", continuous: "continuous", "living-room": "living-room", "bed-room": "bed-room", kitchen: "kitchen", sleep: "sleep" },
+    mode: { AUTO: "AUTO", COOL: "COOL", DRY: "DRY", HEAT: "HEAT", FAN_ONLY: "FAN_ONLY", CUSTOM_DRY: "CUSTOM_DRY", OFF: "OFF", set: "set", continuity: "continuity", dry_clothes: "dry clothes", dry_shoes: "dry shoes", fan: "fan", manual: "manual", continuous: "continuous", "living-room": "living-room", "bed-room": "bed-room", kitchen: "kitchen", sleep: "sleep" },
     fanSpeedName: { silent: "silent", low: "low", medium: "medium", high: "high", full: "full", auto: "auto", custom: "custom" },
     swing: { off: "off", vertical: "vertical", horizontal: "horizontal", both: "both" },
     temperatureUnit: { 0: "celsius", 1: "fahrenheit" },
@@ -273,7 +273,7 @@ const CAPABILITY_DESCRIPTIONS = {
 /** @type {Array<{id: string, common: ioBroker.StateCommon}>} */
 const AC_CONTROLS = [
     { id: "powerOn", common: { name: "Power on/off", type: "boolean", role: "switch.power", read: true, write: true, def: false } },
-    { id: "mode", common: { name: "Operating mode", type: "string", role: "state", read: true, write: true, def: "auto", states: { auto: "auto", cool: "cool", dry: "dry", heat: "heat", fanonly: "fanonly", customdry: "customdry" } } },
+    { id: "mode", common: { name: "Operating mode", type: "string", role: "level.mode.airconditioner", read: true, write: true, def: "AUTO", states: { AUTO: "AUTO", COOL: "COOL", DRY: "DRY", HEAT: "HEAT", FAN_ONLY: "FAN_ONLY", CUSTOM_DRY: "CUSTOM_DRY" } } },
     { id: "temperatureSetpoint", common: { name: "Target temperature", type: "number", role: "level.temperature", unit: "°C", read: true, write: true, min: 16, max: 31, def: 21 } },
     { id: "temperatureUnit", common: { name: "Temperature unit", type: "string", role: "state", read: true, write: true, def: "celsius", states: { celsius: "celsius", fahrenheit: "fahrenheit" } } },
     { id: "fanSpeed", common: { name: "Fan speed (numeric)", type: "number", role: "level.fan", read: true, write: true, min: 0, max: 102, def: 102 } },
