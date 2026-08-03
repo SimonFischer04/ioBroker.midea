@@ -197,6 +197,50 @@ const STATUS_UNITS = {
     offTimerMinutes: "min",
 };
 
+const STATUS_ROLES = {
+    // Temperatures
+    indoorTemperature: "value.temperature",
+    outdoorTemperature: "value.temperature",
+    indoorAmbientTemperature: "value.temperature",
+    indoorCoilTemperature: "value.temperature",
+    outdoorCoilTemperature: "value.temperature",
+    outdoorAmbientTemperature: "value.temperature",
+    freshAirTemperature: "value.temperature",
+    // Humidity
+    indoorHumidity: "value.humidity",
+    currentHumidity: "value.humidity",
+    // Energy / power
+    realtimePower: "value.power",
+    realtimePowerBinary: "value.power",
+    realtimePowerMsmartBCD: "value.power",
+    outdoorUnitPower: "value.power",
+    totalEnergyConsumption: "value.power.consumption",
+    totalEnergyConsumptionBinary: "value.power.consumption",
+    totalEnergyConsumptionBinaryKwh: "value.power.consumption",
+    totalEnergyConsumptionMsmartBCD: "value.power.consumption",
+    currentEnergyConsumption: "value.power.consumption",
+    currentEnergyConsumptionBinary: "value.power.consumption",
+    currentEnergyConsumptionBinaryKwh: "value.power.consumption",
+    currentEnergyConsumptionMsmartBCD: "value.power.consumption",
+    powerUsage: "value.power.consumption",
+    totalOperatingConsumption: "value.power.consumption",
+    // Electrical
+    outdoorUnitVoltage: "value.voltage",
+    outdoorUnitCurrent: "value.current",
+    compressorFrequency: "value",
+    // Indicators
+    inError: "indicator.alarm",
+    defrostActive: "indicator",
+    defrosting: "indicator",
+    dustFull: "indicator.maintenance",
+    filterIndicator: "indicator.maintenance",
+    tankFull: "indicator.alarm",
+    selfCleanActive: "indicator",
+    online: "indicator.reachable",
+    // Tank
+    tankLevel: "value",
+};
+
 const STATUS_STATE_ENUMS = {
     mode: { AUTO: "AUTO", COOL: "COOL", DRY: "DRY", HEAT: "HEAT", FAN_ONLY: "FAN_ONLY", CUSTOM_DRY: "CUSTOM_DRY", OFF: "OFF", set: "set", continuity: "continuity", dry_clothes: "dry clothes", dry_shoes: "dry shoes", fan: "fan", manual: "manual", continuous: "continuous", "living-room": "living-room", "bed-room": "bed-room", kitchen: "kitchen", sleep: "sleep" },
     fanSpeedName: { silent: "silent", low: "low", medium: "medium", high: "high", full: "full", auto: "auto", custom: "custom" },
@@ -277,7 +321,7 @@ const AC_CONTROLS = [
     { id: "temperatureSetpoint", common: { name: "Target temperature", type: "number", role: "level.temperature", unit: "°C", read: true, write: true, min: 16, max: 31, def: 21 } },
     { id: "temperatureUnit", common: { name: "Temperature unit", type: "string", role: "state", read: true, write: true, def: "celsius", states: { celsius: "celsius", fahrenheit: "fahrenheit" } } },
     { id: "fanSpeed", common: { name: "Fan speed (numeric)", type: "number", role: "level.fan", read: true, write: true, min: 0, max: 102, def: 102 } },
-    { id: "fanSpeedName", common: { name: "Fan speed (named)", type: "string", role: "state", read: true, write: true, def: "auto", states: { silent: "silent", low: "low", medium: "medium", high: "high", full: "full", auto: "auto" } } },
+    { id: "fanSpeedName", common: { name: "Fan speed (named)", type: "string", role: "level.mode.fan", read: true, write: true, def: "auto", states: { silent: "silent", low: "low", medium: "medium", high: "high", full: "full", auto: "auto" } } },
     { id: "swing", common: { name: "Swing", type: "string", role: "level.mode.swing", read: true, write: true, def: "STATIONARY", states: { STATIONARY: "STATIONARY", VERTICAL: "VERTICAL", HORIZONTAL: "HORIZONTAL", BOTH: "BOTH" } } },
     { id: "ecoMode", common: { name: "Eco mode", type: "boolean", role: "switch", read: true, write: true, def: false } },
     { id: "turboMode", common: { name: "Turbo mode", type: "boolean", role: "switch", read: true, write: true, def: false } },
@@ -514,8 +558,8 @@ const WATER_PURIFIER_CONTROLS = [
 /** @type {Array<{id: string, common: ioBroker.StateCommon}>} */
 const LIGHT_CONTROLS = [
     { id: "powerOn", common: power() },
-    { id: "brightness", common: numLevel("Brightness", 0, 255, 128) },
-    { id: "colorTemperature", common: numLevel("Color temperature", 0, 255, 128) },
+    { id: "brightness", common: { name: "Brightness", type: "number", role: "level.dimmer", read: true, write: true, min: 0, max: 255, def: 128 } },
+    { id: "colorTemperature", common: { name: "Color temperature", type: "number", role: "level.color.temperature", read: true, write: true, min: 0, max: 255, def: 128 } },
     { id: "effect", common: numLevel("Effect (1..5)", 1, 5, 1) },
 ];
 
@@ -1362,6 +1406,7 @@ class MideaAdapter extends utils.Adapter {
             descriptions: STATUS_DESCRIPTIONS,
             states: STATUS_STATE_ENUMS,
             units: STATUS_UNITS,
+            roles: STATUS_ROLES,
             write: false,
             channelName: "Status",
         });
