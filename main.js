@@ -1375,7 +1375,15 @@ class MideaAdapter extends utils.Adapter {
         const controls = TYPED_CONTROLS[descriptor.applianceType];
         if (!controls) return;
         for (const def of controls) {
-            await this.setObjectAsync(`${root}.control.${def.id}`, {
+            // Use extendObject to preserve user customizations (e.g. common.custom),
+            // but first delete common.states so it gets fully replaced rather than merged
+            // with stale keys from previous adapter versions.
+            const obj = await this.getObjectAsync(`${root}.control.${def.id}`);
+            if (obj && obj.common && obj.common.states) {
+                obj.common.states = null;
+                await this.setObjectAsync(`${root}.control.${def.id}`, obj);
+            }
+            await this.extendObjectAsync(`${root}.control.${def.id}`, {
                 type: "state",
                 common: def.common,
                 native: {},
@@ -1601,7 +1609,19 @@ class MideaAdapter extends utils.Adapter {
         let v;
         if (t === "boolean") v = !!state.val;
         else if (t === "number") v = Number(state.val);
-        else v = String(state.val);
+        else {
+            v = String(state.val);
+            // Some visualizations (e.g. ioBroker.devices) may send a numeric index
+            // instead of the string key from common.states. Map it back to the
+            // corresponding state key so the device driver receives a valid value.
+            if (def.common.states && /^\d+$/.test(v) && !(v in def.common.states)) {
+                const keys = Object.keys(def.common.states);
+                const idx = Number(v);
+                if (idx >= 0 && idx < keys.length) {
+                    v = keys[idx];
+                }
+            }
+        }
 
         // Some controls expose a friendly "*Name" alias for what the device-side
         // setter accepts under the unsuffixed key (fanSpeed accepts the string,
