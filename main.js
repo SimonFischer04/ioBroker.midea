@@ -1609,19 +1609,7 @@ class MideaAdapter extends utils.Adapter {
         let v;
         if (t === "boolean") v = !!state.val;
         else if (t === "number") v = Number(state.val);
-        else {
-            v = String(state.val);
-            // Some visualizations (e.g. ioBroker.devices) may send a numeric index
-            // instead of the string key from common.states. Map it back to the
-            // corresponding state key so the device driver receives a valid value.
-            if (def.common.states && /^\d+$/.test(v) && !(v in def.common.states)) {
-                const keys = Object.keys(def.common.states);
-                const idx = Number(v);
-                if (idx >= 0 && idx < keys.length) {
-                    v = keys[idx];
-                }
-            }
-        }
+        else v = String(state.val);
 
         // Some controls expose a friendly "*Name" alias for what the device-side
         // setter accepts under the unsuffixed key (fanSpeed accepts the string,
