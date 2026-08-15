@@ -250,7 +250,7 @@ const STATUS_ROLES = {
 };
 
 const STATUS_STATE_ENUMS = {
-    mode: { AUTO: "Auto", COOL: "Cool", DRY: "Dry", HEAT: "Heat", FAN_ONLY: "Fan only", CUSTOM_DRY: "Custom dry", set: "Set", continuity: "Continuity", dry_clothes: "Dry clothes", dry_shoes: "Dry shoes", fan: "Fan", manual: "Manual", continuous: "Continuous", "living-room": "Living room", "bed-room": "Bed room", kitchen: "Kitchen", sleep: "Sleep" },
+    mode: { AUTO: "Auto", COOL: "Cool", DRY: "Dry", HEAT: "Heat", FAN_ONLY: "Fan only", set: "Set", continuity: "Continuity", dry_clothes: "Dry clothes", dry_shoes: "Dry shoes", fan: "Fan", manual: "Manual", continuous: "Continuous", "living-room": "Living room", "bed-room": "Bed room", kitchen: "Kitchen", sleep: "Sleep" },
     fanSpeedName: { SILENT: "Silent", LOW: "Low", MEDIUM: "Medium", HIGH: "High", FULL: "Full", AUTO: "Auto", CUSTOM: "Custom" },
     swing: { STATIONARY: "Stationary", VERTICAL: "Vertical", HORIZONTAL: "Horizontal", BOTH: "Both" },
     temperatureUnit: { 0: "Celsius", 1: "Fahrenheit" },
@@ -325,7 +325,7 @@ const CAPABILITY_DESCRIPTIONS = {
 /** @type {Array<{id: string, common: ioBroker.StateCommon}>} */
 const AC_CONTROLS = [
     { id: "powerOn", common: { name: "Power on/off", type: "boolean", role: "switch.power", read: true, write: true, def: false } },
-    { id: "mode", common: { name: "Operating mode", type: "string", role: "level.mode.airconditioner", read: true, write: true, def: "AUTO", states: { AUTO: "Auto", COOL: "Cool", DRY: "Dry", HEAT: "Heat", FAN_ONLY: "Fan only", CUSTOM_DRY: "Custom dry" } } },
+    { id: "mode", common: { name: "Operating mode", type: "string", role: "level.mode.airconditioner", read: true, write: true, def: "AUTO", states: { AUTO: "Auto", COOL: "Cool", DRY: "Dry", HEAT: "Heat", FAN_ONLY: "Fan only" } } },
     { id: "temperatureSetpoint", common: { name: "Target temperature", type: "number", role: "level.temperature", unit: "°C", read: true, write: true, min: 16, max: 31, def: 21 } },
     { id: "temperatureUnit", common: { name: "Temperature unit", type: "string", role: "state", read: true, write: true, def: "celsius", states: { celsius: "Celsius", fahrenheit: "Fahrenheit" } } },
     { id: "fanSpeed", common: { name: "Fan speed (numeric)", type: "number", role: "level.fan", read: true, write: true, min: 0, max: 102, def: 102 } },
@@ -1497,10 +1497,9 @@ class MideaAdapter extends utils.Adapter {
         if (caps.heatMode) modeStates.HEAT = "Heat";
         // FAN_ONLY is available on any device that has at least one other mode
         if (caps.coolMode || caps.heatMode || caps.dryMode || caps.autoMode) modeStates.FAN_ONLY = "Fan only";
-        if (caps.dryMode) modeStates.CUSTOM_DRY = "Custom dry";
         // If no mode caps reported at all, keep all options as fallback
         if (!Object.keys(modeStates).length) {
-            Object.assign(modeStates, { AUTO: "Auto", COOL: "Cool", DRY: "Dry", HEAT: "Heat", FAN_ONLY: "Fan only", CUSTOM_DRY: "Custom dry" });
+            Object.assign(modeStates, { AUTO: "Auto", COOL: "Cool", DRY: "Dry", HEAT: "Heat", FAN_ONLY: "Fan only" });
         }
         await this._setDynamicStates(`${root}.mode`, modeStates);
 
@@ -1510,8 +1509,6 @@ class MideaAdapter extends utils.Adapter {
         if (caps.fanLow) fanStates.LOW = "Low";
         if (caps.fanMedium) fanStates.MEDIUM = "Medium";
         if (caps.fanHigh) fanStates.HIGH = "High";
-        // FULL is always available when fan speed control exists
-        if (caps.fanSpeedControl !== false) fanStates.FULL = "Full";
         if (caps.fanAuto) fanStates.AUTO = "Auto";
         // If no specific fan caps reported, keep all options
         if (!Object.keys(fanStates).length) {
