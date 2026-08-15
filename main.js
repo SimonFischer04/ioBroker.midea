@@ -1490,13 +1490,19 @@ class MideaAdapter extends utils.Adapter {
         const root = `${deviceId}.control`;
 
         // --- mode ---
-        const modeStates = { OFF: "Off", FAN_ONLY: "Fan only" };
+        const modeStates = {};
         if (caps.autoMode) modeStates.AUTO = "Auto";
         if (caps.coolMode) modeStates.COOL = "Cool";
         if (caps.dryMode) modeStates.DRY = "Dry";
         if (caps.heatMode) modeStates.HEAT = "Heat";
-        // CUSTOM_DRY is not reported via capabilities, include if dryMode is supported
+        // FAN_ONLY is available on any device that has at least one other mode
+        if (caps.coolMode || caps.heatMode || caps.dryMode || caps.autoMode) modeStates.FAN_ONLY = "Fan only";
         if (caps.dryMode) modeStates.CUSTOM_DRY = "Custom dry";
+        modeStates.OFF = "Off";
+        // If no mode caps reported at all, keep all options as fallback
+        if (Object.keys(modeStates).length <= 1) {
+            Object.assign(modeStates, { AUTO: "Auto", COOL: "Cool", DRY: "Dry", HEAT: "Heat", FAN_ONLY: "Fan only", CUSTOM_DRY: "Custom dry", OFF: "Off" });
+        }
         await this._setDynamicStates(`${root}.mode`, modeStates);
 
         // --- fanSpeedName ---
