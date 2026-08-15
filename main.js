@@ -98,6 +98,8 @@ const STATUS_DESCRIPTIONS = {
     outdoorFanSpeedRpm: "Outdoor fan speed",
     defrostActive: "Defrost cycle active",
     heatingActive: "Heating active (C1/0x45 byte 8 non-zero)",
+    horizontalLouverAngle: "Horizontal louver angle (deg, Group 11)",
+    verticalLouverAngle: "Vertical louver angle (deg, Group 11)",
     // Additional NewProtocol property toggles surfaced via msmart-ng
     // PropertyId enum (devices/AC/command.py).
     rateSelect: "Fan-speed precision level",
@@ -332,8 +334,17 @@ const AC_CONTROLS = [
     { id: "ecoMode", common: { name: "Eco mode", type: "boolean", role: "switch", read: true, write: true, def: false } },
     { id: "turboMode", common: { name: "Turbo mode", type: "boolean", role: "switch", read: true, write: true, def: false } },
     { id: "sleepMode", common: { name: "Sleep mode", type: "boolean", role: "switch", read: true, write: true, def: false } },
+    { id: "save", common: { name: "Power saving (Quiet Sleep)", type: "boolean", role: "switch", read: true, write: true, def: false } },
     { id: "purify", common: { name: "Purify / ionizer", type: "boolean", role: "switch", read: true, write: true, def: false } },
     { id: "dryClean", common: { name: "Dry clean", type: "boolean", role: "switch", read: true, write: true, def: false } },
+    { id: "selfClean", common: { name: "Self clean (app: Selbstreinigung)", type: "boolean", role: "switch", read: true, write: true, def: false } },
+    { id: "anion", common: { name: "Anion / ionizer", type: "boolean", role: "switch", read: true, write: true, def: false } },
+    { id: "sound", common: { name: "Buzzer (persistent)", type: "boolean", role: "switch", read: true, write: true, def: false } },
+    { id: "promptTone", common: { name: "Prompt tone (beep on command)", type: "boolean", role: "switch", read: false, write: true, def: false } },
+    { id: "jetCool", common: { name: "Jet / flash cool", type: "boolean", role: "switch", read: true, write: true, def: false } },
+    { id: "cascade", common: { name: "Wind around (cascade)", type: "boolean", role: "switch", read: true, write: true, def: false } },
+    { id: "presetIeco", common: { name: "iECO preset", type: "boolean", role: "switch", read: true, write: true, def: false } },
+    { id: "rateSelect", common: { name: "Fan-speed precision level", type: "number", role: "level", read: true, write: true, min: 0, max: 100, def: 0 } },
     { id: "frostProtection", common: { name: "Frost protection (8 °C heat)", type: "boolean", role: "switch", read: true, write: true, def: false } },
     { id: "smartEye", common: { name: "Smart eye / motion sensor", type: "boolean", role: "switch", read: true, write: true, def: false } },
     { id: "auxHeating", common: { name: "Auxiliary heater (PTC)", type: "boolean", role: "switch", read: true, write: true, def: false } },
@@ -634,7 +645,7 @@ class MideaAdapter extends utils.Adapter {
          * Cloud-listed appliances keyed by id. Populated on each discovery
          * cycle so onStateChange can produce an actionable warning when the
          * user writes to a control whose device is not currently registered.
-         * @type {Map<string, {name?: string, type?: number, online?: boolean}>}
+         * @type {Map<string, {name?: string, type?: number, online?: boolean, modelNumber?: string}>}
          */
         this.cloudAppliances = new Map();
         /**
@@ -908,6 +919,7 @@ class MideaAdapter extends utils.Adapter {
                         name: item.name,
                         type: item.type,
                         online: item.online,
+                        modelNumber: item.modelNumber,
                     });
                 }
                 this.log.info(`Cloud listing: ${cloudList.length} appliance(s)`);
@@ -961,6 +973,12 @@ class MideaAdapter extends utils.Adapter {
         for (const desc of lanDevices) {
             const cloudName = cloudByIdName.get(desc.id);
             if (cloudName) desc.name = cloudName;
+            // The cloud listing carries the 8-digit model number that LAN
+            // discovery never reports. Some AC decoders (e.g. the 0x7e
+            // new-protocol temperature path) are gated on a specific model,
+            // so pass it through when we have it.
+            const cloudInfo = this.cloudAppliances.get(desc.id);
+            if (cloudInfo && cloudInfo.modelNumber) desc.modelNumber = cloudInfo.modelNumber;
             try {
                 await this.registerDevice(desc);
             } catch (err) {

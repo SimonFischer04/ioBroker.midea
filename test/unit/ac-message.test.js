@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 
 const { ACDevice } = require("../../lib/midea/devices/ac");
 const { calculateCrc, calculateChecksum } = require("../../lib/midea/packet");
-const { parseFrame, NEW_PROTOCOL_TAGS } = require("../../lib/midea/parsers");
+const { parseFrame, NEW_PROTOCOL_TAGS, parseC1, parseNewProtocolTemperature } = require("../../lib/midea/parsers");
 
 const silentLogger = {
     debug: () => {}, info: () => {}, warn: () => {}, error: () => {}, silly: () => {},
@@ -113,6 +113,26 @@ describe("AC MessageGeneralSet (0x40 body)", function () {
         // smart_eye=0x01, dry=0x04, aux_heating=0x08, eco_mode=0x80 → 0x8D
         assert.equal(body[9] & 0x8D, 0x8D);
     });
+
+    it("save (power saving) flips byte 8 bit 0x08 (midea-local #500)", async function () {
+        const dev = makeDevice();
+        const getCmd = captureSetCommand(dev, fakeC0Reply());
+        await dev.setStatus({ save: true });
+        const body = unwrapBody(getCmd());
+        assert.equal(body[8] & 0x08, 0x08, "save=true must set byte 8 bit 0x08");
+    });
+
+    it("save is mutually exclusive with turbo/sleep/eco/comfort/frost", async function () {
+        const dev = makeDevice();
+        dev.status.turboMode = true;
+        const getCmd = captureSetCommand(dev, fakeC0Reply());
+        await dev.setStatus({ save: true });
+        const body = unwrapBody(getCmd());
+        // turbo lives on byte 8 bit 0x20 and byte 10 bit 0x02 — both must clear
+        // when save is the freshly-requested member of the mutex group.
+        assert.equal(body[8] & 0x20, 0x00, "turbo byte-8 bit must clear");
+        assert.equal(body[8] & 0x08, 0x08, "save bit must be set");
+    });
 });
 
 describe("AC MessageNewProtocolSet (0xB0 body)", function () {
@@ -191,6 +211,35 @@ describe("AC MessageNewProtocolSet (0xB0 body)", function () {
         const body = unwrapBody(getCmd());
         assert.equal(body[5], 0x02, "freshAirPower must turn ON");
         assert.equal(body[6], 45, "previous speed must be preserved when only power is updated");
+    });
+
+    it("selfClean=true packs the self_clean tag (0x0039) with value 0x01", async function () {
+        const dev = makeDevice();
+        const getCmd = captureSetCommand(dev, fakeC0Reply());
+        await dev.setNewProtocol({ selfClean: true });
+        const body = unwrapBody(getCmd());
+        assert.equal(body[0], 0xB0);
+        assert.equal(body[1], 0x01, "count");
+        assert.equal(body[2], NEW_PROTOCOL_TAGS.self_clean & 0xFF, "param low byte");
+        assert.equal(body[3], (NEW_PROTOCOL_TAGS.self_clean >> 8) & 0xFF, "param high byte");
+        assert.equal(body[4], 0x01, "value length");
+        assert.equal(body[5], 0x01, "selfClean=true value");
+    });
+
+    it("setStatus({selfClean}) routes the toggle into a B0 frame, not the 0x40 body", async function () {
+        // Regression guard: selfClean (and the other NewProtocol-only toggles)
+        // must be split out of setStatus into setNewProtocol. If they leak into
+        // the 0x40 general-set body the firmware silently ignores them, which is
+        // exactly why the app's "Selbstreinigung" never triggered before.
+        const dev = makeDevice();
+        const getCmd = captureSetCommand(dev, fakeC0Reply());
+        await dev.setStatus({ selfClean: true });
+        // captureSetCommand keeps the LAST request; setStatus sends the 0x40
+        // frame first, then the B0 frame — so the captured cmd must be B0.
+        const body = unwrapBody(getCmd());
+        assert.equal(body[0], 0xB0, "last frame must be the NewProtocol B0 set");
+        assert.equal(body[2], NEW_PROTOCOL_TAGS.self_clean & 0xFF, "self_clean tag low byte");
+        assert.equal(body[3], (NEW_PROTOCOL_TAGS.self_clean >> 8) & 0xFF, "self_clean tag high byte");
     });
 });
 
@@ -385,5 +434,48 @@ describe("AC NewProtocolQuery body (0xB1 + 15 tags)", function () {
             assert.equal(body[2 + i * 2], expected[i] & 0xFF, `tag ${i} low byte`);
             assert.equal(body[3 + i * 2], (expected[i] >> 8) & 0xFF, `tag ${i} high byte`);
         }
+    });
+});
+
+describe("AC C1 Group 11 louver angles (parseC1)", function () {
+    it("decodes sub-body 0x4B: horizontal at byte 9, vertical at byte 12", function () {
+        // parseC1 reads the sub-body type from data[3]; build a 13-byte body
+        // with 0xC1 at [0], 0x4B at [3], angles at [9] and [12].
+        const data = Buffer.alloc(13);
+        data[0] = 0xC1;
+        data[3] = 0x4B;
+        data[9] = 45;   // horizontal
+        data[12] = 70;  // vertical
+        const out = parseC1(data);
+        assert.equal(out.horizontalLouverAngle, 45);
+        assert.equal(out.verticalLouverAngle, 70);
+    });
+});
+
+describe("AC 0x7e new-protocol temperature (parseNewProtocolTemperature)", function () {
+    it("returns null for payloads at/under the minimum length", function () {
+        assert.equal(parseNewProtocolTemperature(Buffer.alloc(41)), null);
+    });
+
+    it("decodes setpoint (byte 1) and indoor temp (bytes 40/41)", function () {
+        const data = Buffer.alloc(42);
+        // setpoint: offset 11.5 + (raw & 0x3F)/2. raw=0x29 (41) → 11.5 + 20.5 = 32
+        // clamp to <=40; use raw that lands at 24: (24-11.5)*2 = 25 → 0x19
+        data[1] = 0x19; // → 11.5 + 12.5 = 24.0
+        data[40] = 94;  // (94-50)/2 = 22.0
+        data[41] = 3;   // + 0.3 = 22.3
+        const out = parseNewProtocolTemperature(data);
+        assert.ok(out, "expected a decoded result");
+        assert.equal(out.temperatureSetpoint, 24.0);
+        assert.equal(out.indoorTemperature, 22.3);
+        assert.equal(out.outdoorTemperature, null, "outdoor is nulled on this model");
+    });
+
+    it("rejects out-of-range indoor temperature", function () {
+        const data = Buffer.alloc(42);
+        data[1] = 0x19;  // valid setpoint 24.0
+        data[40] = 255;  // (255-50)/2 = 102.5 → out of [10,40]
+        data[41] = 0;
+        assert.equal(parseNewProtocolTemperature(data), null);
     });
 });
