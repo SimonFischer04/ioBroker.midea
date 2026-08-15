@@ -1489,6 +1489,8 @@ class MideaAdapter extends utils.Adapter {
     async updateDynamicStates(deviceId, caps) {
         const root = `${deviceId}.control`;
 
+        this.log.debug(`Device ${deviceId}: updateDynamicStates caps: autoMode=${caps.autoMode}, coolMode=${caps.coolMode}, dryMode=${caps.dryMode}, heatMode=${caps.heatMode}, fanSilent=${caps.fanSilent}, fanLow=${caps.fanLow}, fanMedium=${caps.fanMedium}, fanHigh=${caps.fanHigh}, fanAuto=${caps.fanAuto}`);
+
         // --- mode ---
         const modeStates = {};
         if (caps.autoMode) modeStates.AUTO = "Auto";
@@ -1496,6 +1498,7 @@ class MideaAdapter extends utils.Adapter {
         if (caps.dryMode) modeStates.DRY = "Dry";
         if (caps.heatMode) modeStates.HEAT = "Heat";
         if (caps.autoMode || caps.coolMode || caps.dryMode || caps.heatMode) modeStates.FAN_ONLY = "Fan only";
+        this.log.debug(`Device ${deviceId}: computed modeStates: ${JSON.stringify(modeStates)}`);
         if (Object.keys(modeStates).length) {
             await this._setDynamicStates(`${root}.mode`, modeStates);
         }
