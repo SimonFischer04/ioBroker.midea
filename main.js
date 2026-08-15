@@ -1490,31 +1490,30 @@ class MideaAdapter extends utils.Adapter {
         const root = `${deviceId}.control`;
 
         // --- mode ---
-        const modeStates = {};
-        if (caps.autoMode) modeStates.AUTO = "Auto";
-        if (caps.coolMode) modeStates.COOL = "Cool";
-        if (caps.dryMode) modeStates.DRY = "Dry";
-        if (caps.heatMode) modeStates.HEAT = "Heat";
-        // FAN_ONLY is available on any device that has at least one other mode
-        if (caps.coolMode || caps.heatMode || caps.dryMode || caps.autoMode) modeStates.FAN_ONLY = "Fan only";
-        // If no mode caps reported at all, keep all options as fallback
-        if (!Object.keys(modeStates).length) {
-            Object.assign(modeStates, { AUTO: "Auto", COOL: "Cool", DRY: "Dry", HEAT: "Heat", FAN_ONLY: "Fan only" });
+        // Only update mode states if the device actually reported mode capabilities.
+        // If none of the mode flags are true, the device didn't include the mode capability
+        // field — leave the static defaults from createDeviceShell unchanged.
+        if (caps.autoMode || caps.coolMode || caps.dryMode || caps.heatMode) {
+            const modeStates = {};
+            if (caps.autoMode) modeStates.AUTO = "Auto";
+            if (caps.coolMode) modeStates.COOL = "Cool";
+            if (caps.dryMode) modeStates.DRY = "Dry";
+            if (caps.heatMode) modeStates.HEAT = "Heat";
+            modeStates.FAN_ONLY = "Fan only";
+            await this._setDynamicStates(`${root}.mode`, modeStates);
         }
-        await this._setDynamicStates(`${root}.mode`, modeStates);
 
         // --- fanSpeedName ---
-        const fanStates = {};
-        if (caps.fanSilent) fanStates.SILENT = "Silent";
-        if (caps.fanLow) fanStates.LOW = "Low";
-        if (caps.fanMedium) fanStates.MEDIUM = "Medium";
-        if (caps.fanHigh) fanStates.HIGH = "High";
-        if (caps.fanAuto) fanStates.AUTO = "Auto";
-        // If no specific fan caps reported, keep all options
-        if (!Object.keys(fanStates).length) {
-            Object.assign(fanStates, { SILENT: "Silent", LOW: "Low", MEDIUM: "Medium", HIGH: "High", FULL: "Full", AUTO: "Auto" });
+        // Only update if the device reported at least one fan speed capability.
+        if (caps.fanSilent || caps.fanLow || caps.fanMedium || caps.fanHigh || caps.fanAuto) {
+            const fanStates = {};
+            if (caps.fanSilent) fanStates.SILENT = "Silent";
+            if (caps.fanLow) fanStates.LOW = "Low";
+            if (caps.fanMedium) fanStates.MEDIUM = "Medium";
+            if (caps.fanHigh) fanStates.HIGH = "High";
+            if (caps.fanAuto) fanStates.AUTO = "Auto";
+            await this._setDynamicStates(`${root}.fanSpeedName`, fanStates);
         }
-        await this._setDynamicStates(`${root}.fanSpeedName`, fanStates);
 
         // --- swing ---
         const swingStates = { STATIONARY: "Stationary" };
