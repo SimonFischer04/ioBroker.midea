@@ -1375,7 +1375,7 @@ class MideaAdapter extends utils.Adapter {
         const controls = TYPED_CONTROLS[descriptor.applianceType];
         if (!controls) return;
         for (const def of controls) {
-            await this.extendObjectAsync(`${root}.control.${def.id}`, {
+            await this.setObjectAsync(`${root}.control.${def.id}`, {
                 type: "state",
                 common: def.common,
                 native: {},
