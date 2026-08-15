@@ -1478,6 +1478,63 @@ class MideaAdapter extends utils.Adapter {
             write: false,
             channelName: "Capabilities",
         });
+        await this.updateDynamicStates(deviceId, caps);
+    }
+
+    /**
+     * Update common.states for mode/fanSpeedName/swing based on actual device capabilities.
+     * @param {string} deviceId
+     * @param {Record<string, any>} caps
+     */
+    async updateDynamicStates(deviceId, caps) {
+        const root = `${deviceId}.control`;
+
+        // --- mode ---
+        const modeStates = { OFF: "Off", FAN_ONLY: "Fan only" };
+        if (caps.autoMode) modeStates.AUTO = "Auto";
+        if (caps.coolMode) modeStates.COOL = "Cool";
+        if (caps.dryMode) modeStates.DRY = "Dry";
+        if (caps.heatMode) modeStates.HEAT = "Heat";
+        // CUSTOM_DRY is not reported via capabilities, include if dryMode is supported
+        if (caps.dryMode) modeStates.CUSTOM_DRY = "Custom dry";
+        await this._setDynamicStates(`${root}.mode`, modeStates);
+
+        // --- fanSpeedName ---
+        const fanStates = {};
+        if (caps.fanSilent) fanStates.SILENT = "Silent";
+        if (caps.fanLow) fanStates.LOW = "Low";
+        if (caps.fanMedium) fanStates.MEDIUM = "Medium";
+        if (caps.fanHigh) fanStates.HIGH = "High";
+        // FULL is always available when fan speed control exists
+        if (caps.fanSpeedControl !== false) fanStates.FULL = "Full";
+        if (caps.fanAuto) fanStates.AUTO = "Auto";
+        // If no specific fan caps reported, keep all options
+        if (!Object.keys(fanStates).length) {
+            Object.assign(fanStates, { SILENT: "Silent", LOW: "Low", MEDIUM: "Medium", HIGH: "High", FULL: "Full", AUTO: "Auto" });
+        }
+        await this._setDynamicStates(`${root}.fanSpeedName`, fanStates);
+
+        // --- swing ---
+        const swingStates = { STATIONARY: "Stationary" };
+        if (caps.updownFan) swingStates.VERTICAL = "Vertical";
+        if (caps.leftrightFan) swingStates.HORIZONTAL = "Horizontal";
+        if (caps.updownFan && caps.leftrightFan) swingStates.BOTH = "Both";
+        await this._setDynamicStates(`${root}.swing`, swingStates);
+
+        this.log.debug(`Device ${deviceId}: dynamic states updated from capabilities`);
+    }
+
+    /**
+     * Clear and re-set common.states on an object.
+     * @param {string} objId
+     * @param {Record<string, string>} states
+     */
+    async _setDynamicStates(objId, states) {
+        const obj = await this.getObjectAsync(objId);
+        if (!obj) return;
+        obj.common.states = null;
+        await this.setObjectAsync(objId, obj);
+        await this.extendObjectAsync(objId, { common: { states } });
     }
 
     async pollAllDevices() {
