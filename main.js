@@ -1615,21 +1615,6 @@ class MideaAdapter extends utils.Adapter {
         else if (t === "number") v = Number(state.val);
         else v = String(state.val);
 
-        // ioBroker.devices / aliases may send a numeric index (position in the
-        // states list) instead of the string key. Map it back if the control has
-        // enumerated states and the received value looks like a numeric index
-        // that isn't itself a valid state key.
-        if (def.common.states && t === "string") {
-            const keys = Object.keys(def.common.states);
-            if (!keys.includes(v)) {
-                const idx = parseInt(v, 10);
-                if (!isNaN(idx) && idx >= 0 && idx < keys.length) {
-                    this.log.debug(`Mapping numeric index ${v} → ${keys[idx]} for ${control}`);
-                    v = keys[idx];
-                }
-            }
-        }
-
         // Some controls expose a friendly "*Name" alias for what the device-side
         // setter accepts under the unsuffixed key (fanSpeed accepts the string,
         // screenDisplay accepts the string).
