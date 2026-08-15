@@ -1492,16 +1492,20 @@ class MideaAdapter extends utils.Adapter {
         this.log.debug(`Device ${deviceId}: updateDynamicStates caps: autoMode=${caps.autoMode}, coolMode=${caps.coolMode}, dryMode=${caps.dryMode}, heatMode=${caps.heatMode}, fanSilent=${caps.fanSilent}, fanLow=${caps.fanLow}, fanMedium=${caps.fanMedium}, fanHigh=${caps.fanHigh}, fanAuto=${caps.fanAuto}`);
 
         // --- mode ---
-        const modeStates = {};
+        let modeStates = {};
         if (caps.autoMode) modeStates.AUTO = "Auto";
         if (caps.coolMode) modeStates.COOL = "Cool";
         if (caps.dryMode) modeStates.DRY = "Dry";
         if (caps.heatMode) modeStates.HEAT = "Heat";
         if (caps.autoMode || caps.coolMode || caps.dryMode || caps.heatMode) modeStates.FAN_ONLY = "Fan only";
-        this.log.debug(`Device ${deviceId}: computed modeStates: ${JSON.stringify(modeStates)}`);
-        if (Object.keys(modeStates).length) {
-            await this._setDynamicStates(`${root}.mode`, modeStates);
+        // If the device reports capabilities but the mode capability field (0x14) is absent,
+        // all mode flags default to false and modeStates is empty. Fall back to a safe default
+        // set without HEAT (which requires explicit heatMode=true).
+        if (!Object.keys(modeStates).length) {
+            modeStates = { AUTO: "Auto", COOL: "Cool", DRY: "Dry", FAN_ONLY: "Fan only" };
         }
+        this.log.debug(`Device ${deviceId}: computed modeStates: ${JSON.stringify(modeStates)}`);
+        await this._setDynamicStates(`${root}.mode`, modeStates);
 
         // --- fanSpeedName ---
         const fanStates = {};
