@@ -1375,19 +1375,22 @@ class MideaAdapter extends utils.Adapter {
         const controls = TYPED_CONTROLS[descriptor.applianceType];
         if (!controls) return;
         for (const def of controls) {
-            // Use extendObject to preserve user customizations (e.g. common.custom),
-            // but first delete common.states so it gets fully replaced rather than merged
-            // with stale keys from previous adapter versions.
-            const obj = await this.getObjectAsync(`${root}.control.${def.id}`);
-            if (obj && obj.common && obj.common.states) {
-                obj.common.states = null;
-                await this.setObjectAsync(`${root}.control.${def.id}`, obj);
+            const objId = `${root}.control.${def.id}`;
+            const existing = await this.getObjectAsync(objId);
+            if (existing) {
+                // Merge new common into existing, but fully replace common.states
+                // so stale keys from previous adapter versions are removed.
+                // Object.assign overwrites top-level common keys (incl. states)
+                // while preserving keys we don't set (e.g. common.custom).
+                Object.assign(existing.common, def.common);
+                await this.setObjectAsync(objId, existing);
+            } else {
+                await this.setObjectAsync(objId, {
+                    type: "state",
+                    common: def.common,
+                    native: {},
+                });
             }
-            await this.extendObjectAsync(`${root}.control.${def.id}`, {
-                type: "state",
-                common: def.common,
-                native: {},
-            });
         }
     }
 
@@ -1609,7 +1612,22 @@ class MideaAdapter extends utils.Adapter {
         let v;
         if (t === "boolean") v = !!state.val;
         else if (t === "number") v = Number(state.val);
-        else v = String(state.val);
+        else {
+            v = String(state.val);
+            // ioBroker.devices (stateKeyToValue) sends a number when common.states
+            // had numeric keys (e.g. from a previous adapter version that stored
+            // {0:"AUTO", 1:"COOL"} or the null-then-extend migration that produced
+            // numeric indices).  Map such values back to the correct string key.
+            if (def.common.states && !(v in def.common.states)) {
+                const idx = Number(state.val);
+                if (Number.isInteger(idx) && idx >= 0) {
+                    const keys = Object.keys(def.common.states);
+                    if (idx < keys.length) {
+                        v = keys[idx];
+                    }
+                }
+            }
+        }
 
         // Some controls expose a friendly "*Name" alias for what the device-side
         // setter accepts under the unsuffixed key (fanSpeed accepts the string,
