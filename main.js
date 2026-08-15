@@ -250,10 +250,10 @@ const STATUS_ROLES = {
 };
 
 const STATUS_STATE_ENUMS = {
-    mode: { AUTO: "AUTO", COOL: "COOL", DRY: "DRY", HEAT: "HEAT", FAN_ONLY: "FAN_ONLY", CUSTOM_DRY: "CUSTOM_DRY", OFF: "OFF", set: "set", continuity: "continuity", dry_clothes: "dry clothes", dry_shoes: "dry shoes", fan: "fan", manual: "manual", continuous: "continuous", "living-room": "living-room", "bed-room": "bed-room", kitchen: "kitchen", sleep: "sleep" },
-    fanSpeedName: { SILENT: "SILENT", LOW: "LOW", MEDIUM: "MEDIUM", HIGH: "HIGH", FULL: "FULL", AUTO: "AUTO", CUSTOM: "CUSTOM" },
-    swing: { STATIONARY: "STATIONARY", VERTICAL: "VERTICAL", HORIZONTAL: "HORIZONTAL", BOTH: "BOTH" },
-    temperatureUnit: { 0: "celsius", 1: "fahrenheit" },
+    mode: { AUTO: "Auto", COOL: "Cool", DRY: "Dry", HEAT: "Heat", FAN_ONLY: "Fan only", CUSTOM_DRY: "Custom dry", OFF: "Off", set: "Set", continuity: "Continuity", dry_clothes: "Dry clothes", dry_shoes: "Dry shoes", fan: "Fan", manual: "Manual", continuous: "Continuous", "living-room": "Living room", "bed-room": "Bed room", kitchen: "Kitchen", sleep: "Sleep" },
+    fanSpeedName: { SILENT: "Silent", LOW: "Low", MEDIUM: "Medium", HIGH: "High", FULL: "Full", AUTO: "Auto", CUSTOM: "Custom" },
+    swing: { STATIONARY: "Stationary", VERTICAL: "Vertical", HORIZONTAL: "Horizontal", BOTH: "Both" },
+    temperatureUnit: { 0: "Celsius", 1: "Fahrenheit" },
 };
 
 const CAPABILITY_DESCRIPTIONS = {
@@ -325,12 +325,12 @@ const CAPABILITY_DESCRIPTIONS = {
 /** @type {Array<{id: string, common: ioBroker.StateCommon}>} */
 const AC_CONTROLS = [
     { id: "powerOn", common: { name: "Power on/off", type: "boolean", role: "switch.power", read: true, write: true, def: false } },
-    { id: "mode", common: { name: "Operating mode", type: "string", role: "level.mode.airconditioner", read: true, write: true, def: "AUTO", states: { AUTO: "AUTO", COOL: "COOL", DRY: "DRY", HEAT: "HEAT", FAN_ONLY: "FAN_ONLY", CUSTOM_DRY: "CUSTOM_DRY", OFF: "OFF" } } },
+    { id: "mode", common: { name: "Operating mode", type: "string", role: "level.mode.airconditioner", read: true, write: true, def: "AUTO", states: { AUTO: "Auto", COOL: "Cool", DRY: "Dry", HEAT: "Heat", FAN_ONLY: "Fan only", CUSTOM_DRY: "Custom dry", OFF: "Off" } } },
     { id: "temperatureSetpoint", common: { name: "Target temperature", type: "number", role: "level.temperature", unit: "°C", read: true, write: true, min: 16, max: 31, def: 21 } },
-    { id: "temperatureUnit", common: { name: "Temperature unit", type: "string", role: "state", read: true, write: true, def: "celsius", states: { celsius: "celsius", fahrenheit: "fahrenheit" } } },
+    { id: "temperatureUnit", common: { name: "Temperature unit", type: "string", role: "state", read: true, write: true, def: "celsius", states: { celsius: "Celsius", fahrenheit: "Fahrenheit" } } },
     { id: "fanSpeed", common: { name: "Fan speed (numeric)", type: "number", role: "level.fan", read: true, write: true, min: 0, max: 102, def: 102 } },
-    { id: "fanSpeedName", common: { name: "Fan speed (named)", type: "string", role: "level.mode.fan", read: true, write: true, def: "AUTO", states: { SILENT: "SILENT", LOW: "LOW", MEDIUM: "MEDIUM", HIGH: "HIGH", FULL: "FULL", AUTO: "AUTO" } } },
-    { id: "swing", common: { name: "Swing", type: "string", role: "level.mode.swing", read: true, write: true, def: "STATIONARY", states: { STATIONARY: "STATIONARY", VERTICAL: "VERTICAL", HORIZONTAL: "HORIZONTAL", BOTH: "BOTH" } } },
+    { id: "fanSpeedName", common: { name: "Fan speed (named)", type: "string", role: "level.mode.fan", read: true, write: true, def: "AUTO", states: { SILENT: "Silent", LOW: "Low", MEDIUM: "Medium", HIGH: "High", FULL: "Full", AUTO: "Auto" } } },
+    { id: "swing", common: { name: "Swing", type: "string", role: "level.mode.swing", read: true, write: true, def: "STATIONARY", states: { STATIONARY: "Stationary", VERTICAL: "Vertical", HORIZONTAL: "Horizontal", BOTH: "Both" } } },
     { id: "ecoMode", common: { name: "Eco mode", type: "boolean", role: "switch", read: true, write: true, def: false } },
     { id: "turboMode", common: { name: "Turbo mode", type: "boolean", role: "switch", read: true, write: true, def: false } },
     { id: "sleepMode", common: { name: "Sleep mode", type: "boolean", role: "switch", read: true, write: true, def: false } },
@@ -364,10 +364,10 @@ const AC_CONTROLS = [
 /** @type {Array<{id: string, common: ioBroker.StateCommon}>} */
 const DEHUMIDIFIER_CONTROLS = [
     { id: "powerOn", common: { name: "Power on/off", type: "boolean", role: "switch.power", read: true, write: true, def: false } },
-    { id: "mode", common: { name: "Operating mode", type: "string", role: "level.mode.dehumidifier", read: true, write: true, def: "set", states: { set: "set", continuity: "continuity", auto: "auto", dry_clothes: "dry clothes", dry_shoes: "dry shoes", fan: "fan" } } },
+    { id: "mode", common: { name: "Operating mode", type: "string", role: "level.mode.dehumidifier", read: true, write: true, def: "set", states: { set: "Set", continuity: "Continuity", auto: "Auto", dry_clothes: "Dry clothes", dry_shoes: "Dry shoes", fan: "Fan" } } },
     { id: "targetHumidity", common: { name: "Target humidity", type: "number", role: "level.humidity", unit: "%", read: true, write: true, min: 0, max: 100, def: 50 } },
     { id: "fanSpeed", common: { name: "Fan speed (numeric)", type: "number", role: "level.fan", read: true, write: true, min: 0, max: 127, def: 40 } },
-    { id: "fanSpeedName", common: { name: "Fan speed (named)", type: "string", role: "level.mode.fan", read: true, write: true, def: "LOW", states: { SILENT: "SILENT", LOW: "LOW", MEDIUM: "MEDIUM", HIGH: "HIGH", AUTO: "AUTO" } } },
+    { id: "fanSpeedName", common: { name: "Fan speed (named)", type: "string", role: "level.mode.fan", read: true, write: true, def: "LOW", states: { SILENT: "Silent", LOW: "Low", MEDIUM: "Medium", HIGH: "High", AUTO: "Auto" } } },
     { id: "ionMode", common: { name: "Ion / anion mode", type: "boolean", role: "switch", read: true, write: true, def: false } },
     { id: "sleepMode", common: { name: "Sleep mode", type: "boolean", role: "switch", read: true, write: true, def: false } },
     { id: "pumpSwitch", common: { name: "Drain pump", type: "boolean", role: "switch", read: true, write: true, def: false } },
@@ -379,33 +379,33 @@ const DEHUMIDIFIER_CONTROLS = [
 const FAN_CONTROLS = [
     { id: "powerOn", common: { name: "Power on/off", type: "boolean", role: "switch.power", read: true, write: true, def: false } },
     { id: "childLock", common: { name: "Child lock", type: "boolean", role: "switch.lock", read: true, write: true, def: false } },
-    { id: "mode", common: { name: "Operating mode", type: "string", role: "level.mode.fan", read: true, write: true, def: "normal", states: { normal: "normal", natural: "natural", sleep: "sleep", comfort: "comfort", silent: "silent", baby: "baby", induction: "induction", circulation: "circulation", strong: "strong", soft: "soft", customize: "customize", warm: "warm", smart: "smart" } } },
+    { id: "mode", common: { name: "Operating mode", type: "string", role: "level.mode.fan", read: true, write: true, def: "normal", states: { normal: "Normal", natural: "Natural", sleep: "Sleep", comfort: "Comfort", silent: "Silent", baby: "Baby", induction: "Induction", circulation: "Circulation", strong: "Strong", soft: "Soft", customize: "Customize", warm: "Warm", smart: "Smart" } } },
     { id: "fanSpeed", common: { name: "Fan speed", type: "number", role: "level.fan", read: true, write: true, min: 1, max: 26, def: 1 } },
     { id: "oscillate", common: { name: "Oscillation", type: "boolean", role: "switch", read: true, write: true, def: false } },
-    { id: "oscillationMode", common: { name: "Oscillation mode", type: "string", role: "level.mode.swing", read: true, write: true, def: "off", states: { off: "off", oscillation: "oscillation", tilting: "tilting", "curve-w": "curve-w", "curve-8": "curve-8", reserved: "reserved", both: "both" } } },
-    { id: "oscillationAngle", common: { name: "Oscillation angle (deg)", type: "string", role: "level", read: true, write: true, def: "off", states: { off: "off", 30: "30", 60: "60", 90: "90", 120: "120", 180: "180", 360: "360" } } },
-    { id: "tiltingAngle", common: { name: "Tilting angle (deg)", type: "string", role: "level", read: true, write: true, def: "off", states: { off: "off", 30: "30", 60: "60", 90: "90", 120: "120", 180: "180", 360: "360", "+60": "+60", "-60": "-60", 40: "40" } } },
+    { id: "oscillationMode", common: { name: "Oscillation mode", type: "string", role: "level.mode.swing", read: true, write: true, def: "off", states: { off: "Off", oscillation: "Oscillation", tilting: "Tilting", "curve-w": "Curve-W", "curve-8": "Curve-8", reserved: "Reserved", both: "Both" } } },
+    { id: "oscillationAngle", common: { name: "Oscillation angle (deg)", type: "string", role: "level", read: true, write: true, def: "off", states: { off: "Off", 30: "30°", 60: "60°", 90: "90°", 120: "120°", 180: "180°", 360: "360°" } } },
+    { id: "tiltingAngle", common: { name: "Tilting angle (deg)", type: "string", role: "level", read: true, write: true, def: "off", states: { off: "Off", 30: "30°", 60: "60°", 90: "90°", 120: "120°", 180: "180°", 360: "360°", "+60": "+60°", "-60": "-60°", 40: "40°" } } },
 ];
 
 /** @type {Array<{id: string, common: ioBroker.StateCommon}>} */
 const PURIFIER_CONTROLS = [
     { id: "powerOn", common: { name: "Power on/off", type: "boolean", role: "switch.power", read: true, write: true, def: false } },
-    { id: "mode", common: { name: "Operating mode", type: "string", role: "level.mode.purifier", read: true, write: true, def: "auto", states: { standby: "standby", auto: "auto", manual: "manual", sleep: "sleep", fast: "fast", smoke: "smoke" } } },
-    { id: "fanSpeedName", common: { name: "Fan speed", type: "string", role: "level.mode.fan", read: true, write: true, def: "AUTO", states: { AUTO: "AUTO", STANDBY: "STANDBY", LOW: "LOW", MEDIUM: "MEDIUM", HIGH: "HIGH" } } },
+    { id: "mode", common: { name: "Operating mode", type: "string", role: "level.mode.purifier", read: true, write: true, def: "auto", states: { standby: "Standby", auto: "Auto", manual: "Manual", sleep: "Sleep", fast: "Fast", smoke: "Smoke" } } },
+    { id: "fanSpeedName", common: { name: "Fan speed", type: "string", role: "level.mode.fan", read: true, write: true, def: "AUTO", states: { AUTO: "Auto", STANDBY: "Standby", LOW: "Low", MEDIUM: "Medium", HIGH: "High" } } },
     { id: "anion", common: { name: "Anion / ionizer", type: "boolean", role: "switch", read: true, write: true, def: false } },
     { id: "childLock", common: { name: "Child lock", type: "boolean", role: "switch.lock", read: true, write: true, def: false } },
-    { id: "screenDisplayName", common: { name: "Screen display", type: "string", role: "state", read: true, write: true, def: "bright", states: { bright: "bright", dim: "dim", off: "off" } } },
-    { id: "detectMode", common: { name: "Detect mode", type: "string", role: "state", read: true, write: true, def: "off", states: { off: "off", pm25: "pm25", methanal: "methanal" } } },
+    { id: "screenDisplayName", common: { name: "Screen display", type: "string", role: "state", read: true, write: true, def: "bright", states: { bright: "Bright", dim: "Dim", off: "Off" } } },
+    { id: "detectMode", common: { name: "Detect mode", type: "string", role: "state", read: true, write: true, def: "off", states: { off: "Off", pm25: "PM2.5", methanal: "Methanal" } } },
     { id: "standby", common: { name: "Standby (auto-stop on clean air)", type: "boolean", role: "switch", read: true, write: true, def: false } },
 ];
 
 /** @type {Array<{id: string, common: ioBroker.StateCommon}>} */
 const HUMIDIFIER_CONTROLS = [
     { id: "powerOn", common: { name: "Power on/off", type: "boolean", role: "switch.power", read: true, write: true, def: false } },
-    { id: "mode", common: { name: "Operating mode", type: "string", role: "level.mode.humidifier", read: true, write: true, def: "manual", states: { manual: "manual", auto: "auto", continuous: "continuous", "living-room": "living-room", "bed-room": "bed-room", kitchen: "kitchen", sleep: "sleep" } } },
+    { id: "mode", common: { name: "Operating mode", type: "string", role: "level.mode.humidifier", read: true, write: true, def: "manual", states: { manual: "Manual", auto: "Auto", continuous: "Continuous", "living-room": "Living room", "bed-room": "Bed room", kitchen: "Kitchen", sleep: "Sleep" } } },
     { id: "targetHumidity", common: { name: "Target humidity", type: "number", role: "level.humidity", unit: "%", read: true, write: true, min: 0, max: 100, def: 50 } },
-    { id: "fanSpeedName", common: { name: "Fan speed", type: "string", role: "level.mode.fan", read: true, write: true, def: "LOW", states: { LOWEST: "LOWEST", LOW: "LOW", MEDIUM: "MEDIUM", HIGH: "HIGH", AUTO: "AUTO", OFF: "OFF" } } },
-    { id: "screenDisplayName", common: { name: "Screen display", type: "string", role: "state", read: true, write: true, def: "bright", states: { bright: "bright", dim: "dim", off: "off" } } },
+    { id: "fanSpeedName", common: { name: "Fan speed", type: "string", role: "level.mode.fan", read: true, write: true, def: "LOW", states: { LOWEST: "Lowest", LOW: "Low", MEDIUM: "Medium", HIGH: "High", AUTO: "Auto", OFF: "Off" } } },
+    { id: "screenDisplayName", common: { name: "Screen display", type: "string", role: "state", read: true, write: true, def: "bright", states: { bright: "Bright", dim: "Dim", off: "Off" } } },
     { id: "disinfect", common: { name: "Disinfect", type: "boolean", role: "switch", read: true, write: true, def: false } },
 ];
 
@@ -1563,7 +1563,7 @@ class MideaAdapter extends utils.Adapter {
     }
 
     async onStateChange(id, state) {
-        if (!state || state.ack) return;
+        if (!state || state.ack || state.val === null || state.val === undefined) return;
 
         const m = id.match(/\.([^.]+)\.control\.([^.]+)$/);
         if (!m) return;
