@@ -1490,28 +1490,24 @@ class MideaAdapter extends utils.Adapter {
         const root = `${deviceId}.control`;
 
         // --- mode ---
-        // Only update mode states if the device actually reported mode capabilities.
-        // If none of the mode flags are true, the device didn't include the mode capability
-        // field — leave the static defaults from createDeviceShell unchanged.
-        if (caps.autoMode || caps.coolMode || caps.dryMode || caps.heatMode) {
-            const modeStates = {};
-            if (caps.autoMode) modeStates.AUTO = "Auto";
-            if (caps.coolMode) modeStates.COOL = "Cool";
-            if (caps.dryMode) modeStates.DRY = "Dry";
-            if (caps.heatMode) modeStates.HEAT = "Heat";
-            modeStates.FAN_ONLY = "Fan only";
+        const modeStates = {};
+        if (caps.autoMode) modeStates.AUTO = "Auto";
+        if (caps.coolMode) modeStates.COOL = "Cool";
+        if (caps.dryMode) modeStates.DRY = "Dry";
+        if (caps.heatMode) modeStates.HEAT = "Heat";
+        if (caps.autoMode || caps.coolMode || caps.dryMode || caps.heatMode) modeStates.FAN_ONLY = "Fan only";
+        if (Object.keys(modeStates).length) {
             await this._setDynamicStates(`${root}.mode`, modeStates);
         }
 
         // --- fanSpeedName ---
-        // Only update if the device reported at least one fan speed capability.
-        if (caps.fanSilent || caps.fanLow || caps.fanMedium || caps.fanHigh || caps.fanAuto) {
-            const fanStates = {};
-            if (caps.fanSilent) fanStates.SILENT = "Silent";
-            if (caps.fanLow) fanStates.LOW = "Low";
-            if (caps.fanMedium) fanStates.MEDIUM = "Medium";
-            if (caps.fanHigh) fanStates.HIGH = "High";
-            if (caps.fanAuto) fanStates.AUTO = "Auto";
+        const fanStates = {};
+        if (caps.fanSilent) fanStates.SILENT = "Silent";
+        if (caps.fanLow) fanStates.LOW = "Low";
+        if (caps.fanMedium) fanStates.MEDIUM = "Medium";
+        if (caps.fanHigh) fanStates.HIGH = "High";
+        if (caps.fanAuto) fanStates.AUTO = "Auto";
+        if (Object.keys(fanStates).length) {
             await this._setDynamicStates(`${root}.fanSpeedName`, fanStates);
         }
 
